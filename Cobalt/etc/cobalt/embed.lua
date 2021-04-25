@@ -11,11 +11,10 @@ local shell = require("shell")
 local inet = require("internet")
 local gpu = component.gpu
 
+w, h = gpu.maxResolution()
+gpu.setResolution(w, h)
+
 if embeddedinetupdate then
-
-    w, h = gpu.maxResolution()
-
-    gpu.setResolution(w, h)
     gpu.setBackground(0xFFFFFF)
     if gpu.getDepth() == 1 then
         gpu.setForeground(0x000000)
