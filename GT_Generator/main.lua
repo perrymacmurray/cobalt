@@ -147,17 +147,17 @@ while true do -- Main loop
     -- Bar 2
     if supportColor then
         gpu.setForeground(0xFF0000)
-        gpu.fill(bar_w + 1, math.floor((1 - genPerc) * gpu_h), 2 * bar_w + 1, gpu_h, "█")
+        gpu.fill(bar_w + 1, math.floor((1 - genPerc) * gpu_h), bar_w, gpu_h, "█")
     else
-        gpu.fill(bar_w + 1, math.floor((1 - genPerc) * gpu_h), 2 * bar_w + 1, gpu_h, "█")
+        gpu.fill(bar_w + 1, math.floor((1 - genPerc) * gpu_h), bar_w, gpu_h, "█")
     end
 
     -- Bar 3
     if supportColor then
         gpu.setForeground(0x0088FF)
-        gpu.fill(2 * bar_w + 2, math.floor((1 - batteryChange) * gpu_h) + math.floor(gpu_h / 2), 3 * bar_w + 2, math.floor(gpu_h / 2), "█")
+        gpu.fill(2 * bar_w + 2, math.floor((1 - batteryChange) * gpu_h) + math.floor(gpu_h / 2), bar_w, math.floor(gpu_h / 2), "█")
     else
-        gpu.fill(2 * bar_w + 2, math.floor((1 - batteryChange) * gpu_h) + math.floor(gpu_h / 2), 3 * bar_w + 2, math.floor(gpu_h / 2), "X")
+        gpu.fill(2 * bar_w + 2, math.floor((1 - batteryChange) * gpu_h) + math.floor(gpu_h / 2), bar_w, math.floor(gpu_h / 2), "X")
     end
 
     -- Wait
