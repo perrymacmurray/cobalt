@@ -55,12 +55,12 @@ for address, _ in component.list("gt_machine") do
             proxy.setWorkAllowed(true)
 
             local function getOutput(gen)
-                if gen.getEUOutputAverage then
+                if gen.getEUOutputAverage and gen.getEUOutputAverage() ~= 0 then
                     return gen.getEUOutputAverage()
                 elseif gen.getSensorInformation then
                     for val in gen.getSensorInformation() do
                         if string.match(val, "EU/t") then
-                            io.write(val .. '\n')
+                            io.write(val .. '\n') --debug
                             local a, b = string.gsub(val, "[^%d]", '')
                             return tonumber(a)
                         end
