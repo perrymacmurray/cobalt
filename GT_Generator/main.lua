@@ -88,11 +88,9 @@ for address, _ in component.list("gt_machine") do
             file:close()
         end
 
-        for path in fs.list("/embed/generators/") do
-            local file = io.open("/embed/generators/" .. path)
-            table.insert(outputs, file:read())
-            file:close()
-        end
+        local file = io.open("/embed/generators/" .. address)
+        table.insert(outputs, file:read())
+        file:close()
 
         table.insert(generators, proxy)
     end
