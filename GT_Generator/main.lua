@@ -51,7 +51,7 @@ for address, _ in component.list("gt_machine") do
         proxy.setWorkAllowed(false) -- Ensure generator is off
 
         if not fs.exists("/embed/generators/" .. address) then -- Find max output
-            io.write("Discovering new generator " .. address .. '\n')
+            io.write("Discovering new generator " .. address .. "...\n")
             proxy.setWorkAllowed(true)
 
             local function getOutput(gen)
@@ -60,7 +60,6 @@ for address, _ in component.list("gt_machine") do
                 elseif gen.getSensorInformation then
                     for i = 1, #gen.getSensorInformation() do
                         if string.match(gen.getSensorInformation()[i], "EU/t") then
-                            io.write(gen.getSensorInformation()[i] .. '\n') --debug
                             local a, b = string.gsub(gen.getSensorInformation()[i], "[^%d]", '')
                             return tonumber(a)
                         end
@@ -73,11 +72,13 @@ for address, _ in component.list("gt_machine") do
             local output_new = 0
             while output_new > output + 1 do
                 output = getOutput(proxy)
-                os.sleep(15)
+                os.sleep(5) -- Wait for performance to improve
                 output_new = getOutput(proxy)
             end
 
             proxy.setWorkAllowed(false)
+
+            io.write("...Maximum energy output recorded as " .. output .. " EU/t\n")
 
             local file = io.open("/embed/generators/" .. address, "w")
             file:write(output)
