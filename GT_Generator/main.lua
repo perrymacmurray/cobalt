@@ -60,6 +60,7 @@ for address, _ in component.list("gt_machine") do
                 elseif gen.getSensorInformation then
                     for val in gen.getSensorInformation() do
                         if string.match(val, "EU/t") then
+                            io.write(val .. '\n')
                             local a, b = string.gsub(val, "[^%d]", '')
                             return tonumber(a)
                         end
