@@ -2,6 +2,8 @@ local component = require("component")
 local fs = require("filesystem")
 local gpu = component.gpu
 
+TARGETENERGY = 0.8
+
 -- Functions
 function getOutput(gen)
     if gen.getEUOutputAverage and gen.getEUOutputAverage() ~= 0 then
@@ -18,7 +20,7 @@ function getOutput(gen)
 end
 
 -- GPU Pre-Configuration
-local supportColor = not (gpu.getDepth == 1) -- Used for GUI
+local supportColor = not (gpu.getDepth() == 1) -- Used for GUI
 
 gpu_w, gpu_h = gpu.maxResolution()
 gpu.setResolution(gpu_w, gpu_h)
@@ -136,6 +138,7 @@ while true do -- Main loop
     gpu.setBackground(0x000000)
     gpu.setForeground(0xFFFFFF)
     gpu.fill(1, 1, gpu_w, gpu_h, ' ')
+
     -- Bar 1
     if supportColor then
         gpu.setForeground(0x00FF00)
@@ -158,6 +161,62 @@ while true do -- Main loop
         gpu.fill(2 * bar_w + 2, math.floor((1 - batteryChange) * gpu_h) + math.floor(gpu_h / 2), bar_w, math.floor(gpu_h / 2), "█")
     else
         gpu.fill(2 * bar_w + 2, math.floor((1 - batteryChange) * gpu_h) + math.floor(gpu_h / 2), bar_w, math.floor(gpu_h / 2), "X")
+    end
+
+    if supportColor then
+        gpu.setBackground(0x0088FF)
+    else
+        gpu.setBackground(0xFFFFFF)
+    end
+    gpu.fill(2 * bar_w + 2, math.floor(gpu_h / 2), bar_w, math.floor(gpu_h / 2), "-")
+
+    -- Diagnostics
+    --TODO
+
+    -- Decision-making
+    if TARGETENERGY > batteryPerc + 0.5 then
+        for i = 1, #generators do
+            generators[i].setWorkAllowed(true)
+        end
+        if batteryChange < 0 then
+            component.computer.beep(1300, 1) -- Alarm if low and losing power
+        end
+    elseif TARGETENERGY > batteryPerc + 0.2 then
+        if batteryChange > 0 then
+            smallest = nil
+            for i = 1, #generators do
+                if smallest ~= nil and getOutput(smallest) == 0 then goto continue end
+
+                if smallest == nil then
+                   smallest = generators[i]
+                elseif getOutput(smallest) > getOutput(generators[i]) then
+                    smallest = generators[i]
+                end
+                ::continue::
+            end
+
+            if batteryChange - getOutput(smallest) > 0 then
+                smallest.setWorkAllowed(false)
+            end
+        else
+            largest = nil
+            for i = 1, #generators do
+                if largest == nil and generators[i].isWorkAllowed() == false then
+                   largest = generators[i]
+                elseif getOutput(largest) < getOutput(generators[i]) and generators[i].isWorkAllowed() == false then
+                    largest = generators[i]
+                end
+            end
+
+            if largest == nil then
+                component.computer.beep(1300, 0.3) -- Alarm if losing power with all machines
+            else
+                largest.setWorkAllowed(true)
+        end
+    elseif TARGETENERGY + 0.05 < batteryPerc then
+        for i = 1, #generators do
+            generators[i].setWorkAllowed(false)
+        end
     end
 
     -- Wait
