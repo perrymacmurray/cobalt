@@ -58,9 +58,9 @@ for address, _ in component.list("gt_machine") do
                 if gen.getEUOutputAverage and gen.getEUOutputAverage() ~= 0 then
                     return gen.getEUOutputAverage()
                 elseif gen.getSensorInformation then
-                    for val in gen.getSensorInformation() do
-                        if string.match(val, "EU/t") then
-                            io.write(val .. '\n') --debug
+                    for i = 1, #gen.getSensorInformation() do
+                        if string.match(gen.getSensorInformation()[i], "EU/t") then
+                            io.write(gen.getSensorInformation()[i] .. '\n') --debug
                             local a, b = string.gsub(val, "[^%d]", '')
                             return tonumber(a)
                         end
