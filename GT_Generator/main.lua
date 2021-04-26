@@ -212,6 +212,7 @@ while true do -- Main loop
                 component.computer.beep(1300, 0.3) -- Alarm if losing power with all machines
             else
                 largest.setWorkAllowed(true)
+            end
         end
     elseif TARGETENERGY + 0.05 < batteryPerc then
         for i = 1, #generators do
