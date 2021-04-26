@@ -21,7 +21,7 @@ if not fs.exists("/embed/generators") then -- Folder with known generator output
 end
 
 for address, _ in component.list("gt_machine") do
-    io.write("Reading machine " .. address)
+    io.write("Reading machine " .. address .. '\n')
     local proxy = component.proxy(address)
 
     if proxy.getEUCapacity() > 0 then
@@ -51,7 +51,7 @@ for address, _ in component.list("gt_machine") do
         proxy.setWorkAllowed(false) -- Ensure generator is off
 
         if not fs.exists("/embed/generators/" .. address) then -- Find max output
-            io.write("Discovering new generator " .. address)
+            io.write("Discovering new generator " .. address .. '\n')
             proxy.setWorkAllowed(true)
 
             local function getOutput(gen)
@@ -72,9 +72,11 @@ for address, _ in component.list("gt_machine") do
             local output_new = 0
             while output_new > output + 1 do
                 output = getOutput(proxy)
-                os.sleep(5)
+                os.sleep(15)
                 output_new = getOutput(proxy)
             end
+
+            proxy.setWorkAllowed(false)
 
             local file = io.open("/embed/generators/" .. address, "w")
             file:write(output)
