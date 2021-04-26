@@ -128,7 +128,7 @@ while true do -- Main loop
 
     local batteryPerc = currentBattery / totalBattery
     local genPerc = currentGeneration / maxGeneration
-    local batteryChange = ((currentBattery - prev_currentBattery) * 500) / totalBattery --constant may require tuning
+    local batteryChange = ((currentBattery - prev_currentBattery) * 100) / totalBattery --constant may require tuning
     if batteryChange > 1 then
         batteryChange = 1
     elseif batteryChange < -1 then
@@ -158,17 +158,10 @@ while true do -- Main loop
     -- Bar 3
     if supportColor then
         gpu.setForeground(0x0088FF)
-        gpu.fill(2 * bar_w + 2, math.floor((1 - batteryChange) * gpu_h) + math.floor(gpu_h / 2), bar_w, math.floor(gpu_h / 2), "█")
+        gpu.fill(2 * bar_w + 1, math.floor(gpu_h / 2) - math.floor((1 - batteryChange) * gpu_h), bar_w, math.floor(gpu_h / 2), "█")
     else
-        gpu.fill(2 * bar_w + 2, math.floor((1 - batteryChange) * gpu_h) + math.floor(gpu_h / 2), bar_w, math.floor(gpu_h / 2), "X")
+        gpu.fill(2 * bar_w + 1, math.floor((1 - batteryChange) * gpu_h) + math.floor(gpu_h / 2), bar_w, math.floor(gpu_h / 2), "X")
     end
-
-    if supportColor then
-        gpu.setBackground(0x0088FF)
-    else
-        gpu.setBackground(0xFFFFFF)
-    end
-    gpu.fill(2 * bar_w + 2, math.floor(gpu_h / 2), bar_w, math.floor(gpu_h / 2), "-")
 
     -- Diagnostics
     --TODO
