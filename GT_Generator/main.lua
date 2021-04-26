@@ -21,6 +21,7 @@ if not fs.exists("/embed/generators") then -- Folder with known generator output
 end
 
 for address, _ in component.list("gt_machine") do
+    io.write("Reading machine " .. address)
     local proxy = component.proxy(address)
 
     if proxy.getEUCapacity() > 0 then
@@ -34,12 +35,14 @@ for address, _ in component.list("gt_machine") do
         elseif proxy.getEUCapacity() == 0 then -- Sometimes, generators have no EU storage. This tries to catch generators that have work, just in case.
             isGen = true
         elseif proxy.getSensorInformation then -- Last resort
-            if string.match(tostring(proxy.getSensorInformation()), "Turbine") then
-                isGen = true
-            elseif string.match(tostring(proxy.getSensorInformation()), "Engine") then
-                isGen = true
-            elseif string.match(tostring(proxy.getSensorInformation()), "Generator") then
-                isGen = true
+            for local val in gen.getSensorInformation() do
+                if string.match(val), "Turbine") then
+                    isGen = true
+                elseif string.match(val), "Engine") then
+                    isGen = true
+                elseif string.match(val), "Generator") then
+                    isGen = true
+                end
             end
         end
     end
@@ -53,9 +56,9 @@ for address, _ in component.list("gt_machine") do
                 if gen.getEUOutputAverage then
                     return gen.getEUOutputAverage()
                 elseif gen.getSensorInformation then
-                    for val in gen.getSensorInformation() do
+                    for local val in gen.getSensorInformation() do
                         if string.match(val, "EU/t") then
-                            local a, local b = string.gsub(val, "[^%d]", '')
+                            local a, b = string.gsub(val, "[^%d]", '')
                             return tonumber(a)
                         end
                     end
@@ -65,7 +68,7 @@ for address, _ in component.list("gt_machine") do
 
             local output = -1
             local output_new = 0
-            while output_new > output + 1 then
+            while output_new > output + 1 do
                 output = getOutput(proxy)
                 os.sleep(5)
                 output_new = getOutput(proxy)
