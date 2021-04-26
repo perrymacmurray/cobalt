@@ -98,7 +98,7 @@ end
 
 totalBattery = 0
 currentBattery = 0
-for proxy in eu_objects do
+for _, proxy in eu_objects do
     totalBattery = totalBatteryCap + proxy.getEUCapacity()
 end
 
@@ -106,7 +106,7 @@ prev_currentBattery = 0
 
 currentGeneration = 0
 maxGeneration = 0
-for var in outputs do
+for _, var in outputs do
     maxGeneration = maxGeneration + var
 end
 
@@ -116,11 +116,11 @@ while true do -- Main loop
     currentBattery = 0
     currentGeneration = 0
 
-    for proxy in eu_objects do
+    for _, proxy in eu_objects do
         currentBattery = currentBattery + proxy.getStoredEU()
     end
 
-    for proxy in generators do
+    for _, proxy in generators do
         currentGeneration = currentGeneration + getOutput(proxy)
     end
 
@@ -149,15 +149,15 @@ while true do -- Main loop
         gpu.setForeground(0xFF0000)
         gpu.fill(bar_w + 1, math.floor((1 - genPerc) * gpu_h), 2 * bar_w + 1, gpu_h, "█")
     else
-        gpu.fill(1, math.floor((1 - batteryPerc) * gpu_h), 2 * bar_w + 1, gpu_h, "█")
+        gpu.fill(bar_w + 1, math.floor((1 - genPerc) * gpu_h), 2 * bar_w + 1, gpu_h, "█")
     end
 
     -- Bar 3
     if supportColor then
         gpu.setForeground(0x0088FF)
-        gpu.fill(2 * bar_w + 2, math.floor((1 - batteryChange) * gpu_h), 3 * bar_w + 2, gpu_h, "█")
+        gpu.fill(2 * bar_w + 2, math.floor((1 - batteryChange) * gpu_h) + math.floor(gpu_h / 2), 3 * bar_w + 2, math.floor(gpu_h / 2), "█")
     else
-        gpu.fill(1, math.floor((1 - batteryPerc) * gpu_h), 3 * bar_w + 2, gpu_h, "█")
+        gpu.fill(2 * bar_w + 2, math.floor((1 - batteryChange) * gpu_h) + math.floor(gpu_h / 2), 3 * bar_w + 2, math.floor(gpu_h / 2), "X")
     end
 
     -- Wait
