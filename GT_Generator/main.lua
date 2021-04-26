@@ -98,16 +98,16 @@ end
 
 totalBattery = 0
 currentBattery = 0
-for _, proxy in eu_objects do
-    totalBattery = totalBatteryCap + proxy.getEUCapacity()
+for i = 1, #eu_objects do
+    totalBattery = totalBatteryCap + eu_objects[i].getEUCapacity()
 end
 
 prev_currentBattery = 0
 
 currentGeneration = 0
 maxGeneration = 0
-for _, var in outputs do
-    maxGeneration = maxGeneration + var
+for i = 1, #outputs do
+    maxGeneration = maxGeneration + outputs[i]
 end
 
 while true do -- Main loop
@@ -116,12 +116,12 @@ while true do -- Main loop
     currentBattery = 0
     currentGeneration = 0
 
-    for _, proxy in eu_objects do
-        currentBattery = currentBattery + proxy.getStoredEU()
+    for i = 1, #eu_objects do
+        currentBattery = currentBattery + eu_objects[i].getStoredEU()
     end
 
-    for _, proxy in generators do
-        currentGeneration = currentGeneration + getOutput(proxy)
+    for i = 1, #generators do
+        currentGeneration = currentGeneration + getOutput(generators[i])
     end
 
     local batteryPerc = currentBattery / totalBattery
