@@ -12,7 +12,7 @@ bar_w = math.floor(gpu_w / 6) -- Three bars, which should all be to the far left
 
 -- Machine discovery
 generators = {}
-eu-objects = {}
+eu_objects = {}
 
 outputs = {}
 
@@ -24,7 +24,7 @@ for address, _ in component.list("gt_machine") do
     local proxy = component.proxy(address)
 
     if proxy.getEUCapacity() > 0 then
-        table.insert(eu-objects, proxy)
+        table.insert(eu_objects, proxy)
     end
 
     local isGen = false
