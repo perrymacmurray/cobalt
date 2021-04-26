@@ -99,7 +99,7 @@ end
 totalBattery = 0
 currentBattery = 0
 for i = 1, #eu_objects do
-    totalBattery = totalBatteryCap + eu_objects[i].getEUCapacity()
+    totalBattery = totalBattery + eu_objects[i].getEUCapacity()
 end
 
 prev_currentBattery = 0
