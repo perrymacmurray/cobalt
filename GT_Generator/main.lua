@@ -35,12 +35,12 @@ for address, _ in component.list("gt_machine") do
         elseif proxy.getEUCapacity() == 0 then -- Sometimes, generators have no EU storage. This tries to catch generators that have work, just in case.
             isGen = true
         elseif proxy.getSensorInformation then -- Last resort
-            for val in proxy.getSensorInformation() do
-                if string.match(val, "Turbine") then
+            for int i = 1, #proxy.getSensorInformation() do
+                if string.match(proxy.getSensorInformation()[i], "Turbine") then
                     isGen = true
-                elseif string.match(val, "Engine") then
+                elseif string.match(proxy.getSensorInformation()[i], "Engine") then
                     isGen = true
-                elseif string.match(val, "Generator") then
+                elseif string.match(proxy.getSensorInformation()[i], "Generator") then
                     isGen = true
                 end
             end
@@ -72,7 +72,7 @@ for address, _ in component.list("gt_machine") do
             local output_new = 0
             while output_new > output + 1 do
                 output = getOutput(proxy)
-                os.sleep(5) -- Wait for performance to improve
+                os.sleep(10) -- Wait for performance to improve
                 output_new = getOutput(proxy)
             end
 
