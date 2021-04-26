@@ -2,6 +2,21 @@ local component = require("component")
 local fs = require("filesystem")
 local gpu = component.gpu
 
+-- Functions
+function getOutput(gen)
+    if gen.getEUOutputAverage and gen.getEUOutputAverage() ~= 0 then
+        return gen.getEUOutputAverage()
+    elseif gen.getSensorInformation then
+        for i = 1, #gen.getSensorInformation() do
+            if string.match(gen.getSensorInformation()[i], "EU/t") then
+                local a, b = string.gsub(gen.getSensorInformation()[i], "[^%d]", '')
+                return tonumber(a)
+            end
+        end
+    end
+    return -1
+end
+
 -- GPU Pre-Configuration
 local supportColor = not (gpu.getDepth == 1) -- Used for GUI
 
@@ -54,20 +69,6 @@ for address, _ in component.list("gt_machine") do
             io.write("Discovering new generator " .. address .. "...\n")
             proxy.setWorkAllowed(true)
 
-            local function getOutput(gen)
-                if gen.getEUOutputAverage and gen.getEUOutputAverage() ~= 0 then
-                    return gen.getEUOutputAverage()
-                elseif gen.getSensorInformation then
-                    for i = 1, #gen.getSensorInformation() do
-                        if string.match(gen.getSensorInformation()[i], "EU/t") then
-                            local a, b = string.gsub(gen.getSensorInformation()[i], "[^%d]", '')
-                            return tonumber(a)
-                        end
-                    end
-                end
-                return -1
-            end
-
             local output = -2
             local output_new = 0
             while output_new > output + 1 do
@@ -95,6 +96,70 @@ for address, _ in component.list("gt_machine") do
     end
 end
 
---while true do -- Main loop
-    --todo
---end
+totalBattery = 0
+currentBattery = 0
+for proxy in eu_objects do
+    totalBattery = totalBatteryCap + proxy.getEUCapacity()
+end
+
+prev_currentBattery = 0
+
+currentGeneration = 0
+maxGeneration = 0
+for var in outputs do
+    maxGeneration = maxGeneration + var
+end
+
+while true do -- Main loop
+    -- Get important variables
+    prev_currentBattery = currentBattery
+    currentBattery = 0
+    currentGeneration = 0
+
+    for proxy in eu_objects do
+        currentBattery = currentBattery + proxy.getStoredEU()
+    end
+
+    for proxy in generators do
+        currentGeneration = currentGeneration + getOutput(proxy)
+    end
+
+    local batteryPerc = currentBattery / totalBattery
+    local genPerc = currentGeneration / maxGeneration
+    local batteryChange = ((currentBattery - prev_currentBattery) * 500) / totalBattery --constant may require tuning
+    if batteryChange > 1 then
+        batteryChange = 1
+    elseif batteryChange < -1 then
+        batteryChange = -1
+    end
+
+    gpu.setBackground(0x000000)
+    gpu.setForeground(0xFFFFFF)
+    gpu.fill(1, 1, gpu_w, gpu_h, ' ')
+    -- Bar 1
+    if supportColor then
+        gpu.setForeground(0x00FF00)
+        gpu.fill(1, math.floor((1 - batteryPerc) * gpu_h), bar_w, gpu_h, "█")
+    else
+        gpu.fill(1, math.floor((1 - batteryPerc) * gpu_h), bar_w, gpu_h, "#")
+    end
+
+    -- Bar 2
+    if supportColor then
+        gpu.setForeground(0xFF0000)
+        gpu.fill(bar_w + 1, math.floor((1 - genPerc) * gpu_h), 2 * bar_w + 1, gpu_h, "█")
+    else
+        gpu.fill(1, math.floor((1 - batteryPerc) * gpu_h), 2 * bar_w + 1, gpu_h, "█")
+    end
+
+    -- Bar 3
+    if supportColor then
+        gpu.setForeground(0x0088FF)
+        gpu.fill(2 * bar_w + 2, math.floor((1 - batteryChange) * gpu_h), 3 * bar_w + 2, gpu_h, "█")
+    else
+        gpu.fill(1, math.floor((1 - batteryPerc) * gpu_h), 3 * bar_w + 2, gpu_h, "█")
+    end
+
+    -- Wait
+    os.sleep(2)
+end
