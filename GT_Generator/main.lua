@@ -157,11 +157,11 @@ while true do -- Main loop
     if supportColor then
         gpu.setBackground(0x888888)
         gpu.fill(2 * bar_w + 1, 1, bar_w, gpu_h, " ")
-        
+
         gpu.setForeground(0x0088FF)
-        gpu.fill(2 * bar_w + 1, math.floor(gpu_h / 2) + math.floor(gpu_h * 0.1) + math.floor(batteryCharge * gpu_h / 2), bar_w, math.floor(gpu_h * 0.2), "█")
+        gpu.fill(2 * bar_w + 1, math.floor(gpu_h / 2) + math.floor(gpu_h * 0.1) + math.floor(batteryChange * gpu_h / 2), bar_w, math.floor(gpu_h * 0.2), "█")
     else
-        gpu.fill(2 * bar_w + 1, math.floor(gpu_h / 2) + math.floor(gpu_h * 0.1) + math.floor(batteryCharge * gpu_h / 2), bar_w, math.floor(gpu_h * 0.15), "X")
+        gpu.fill(2 * bar_w + 1, math.floor(gpu_h / 2) + math.floor(gpu_h * 0.1) + math.floor(batteryChange * gpu_h / 2), bar_w, math.floor(gpu_h * 0.15), "X")
     end
 
     -- Diagnostics
