@@ -1,0 +1,11 @@
+{
+    ["cobalt"] = {
+        files = {
+            [":master/cobalt"] = "//"
+        },
+        name = "cobalt",
+        description = "Cobalt remote management program",
+        authors = "Prototypep",
+        repo = "tree/master/cobalt"
+    }
+}
