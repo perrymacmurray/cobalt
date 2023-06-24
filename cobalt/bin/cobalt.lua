@@ -7,7 +7,7 @@ local internet = component.internet;
 fs.makeDirectory("/etc/cobalt");
 
 term.clear();
-      ___           ___           ___           ___           ___       ___     
+print("      ___           ___           ___           ___           ___       ___     ");
 print("     /\\  \\         /\\  \\         /\\  \\         /\\  \\         /\\__\\     /\\  \\    ");
 print("    /::\\  \\       /::\\  \\       /::\\  \\       /::\\  \\       /:/  /     \\:\\  \\   ");
 print("   /:/\\:\\  \\     /:/\\:\\  \\     /:/\\:\\  \\     /:/\\:\\  \\     /:/  /       \\:\\  \\  ");
@@ -17,7 +17,7 @@ print(" \\:\\  \\  \\/__/ \\:\\  \\ /:/  / \\:\\~\\:\\/:/  / \\/__\\:\\/:/  / \\
 print("  \\:\\  \\        \\:\\  /:/  /   \\:\\ \\::/  /       \\::/  /   \\:\\  \\     /:/  /     ");
 print("   \\:\\  \\        \\:\\/:/  /     \\:\\/:/  /        /:/  /     \\:\\  \\    \\/__/      ");
 print("    \\:\\__\\        \\::/  /       \\::/__/        /:/  /       \\:\\__\\              ");
-print("     \\/__/         \\/__/         ~~            \\/__/         \\/__/              ");
+print("     \\/__/         \\/__/         ~~            \\/__/         \\/__/           V4   ");
 
 print("Welcome to the Cobalt setup!");
 
@@ -29,7 +29,7 @@ if (not fs.exists("/etc/cobalt/uid")) then
     if (uid == "" or uid == nil) then
         print("Generating UID...");
         uid = require("uuid").next();
-        print("UUID:", uid);
+        print("UID:", uid);
     end
     local file = io.open("/etc/cobalt/uid", "w");
     file:write(uid);
@@ -60,7 +60,7 @@ if (internet ~= nil) then
         print("This computer will periodically fetch data from the central server. By default, it does this once per minute.");
         print("If you would like this to be more frequent, please enter the amount of time to wait between requests below (in seconds)");
         local frequency = io.read();
-        if (typeof(frequency) == "number" and math.floor(frequency) == frequency and frequency > 0) then
+        if (type(frequency) == "number" and math.floor(frequency) == frequency and frequency > 0) then
             local file = io.open("/etc/cobalt/frequency", "w");
             file:write(frequency);
             file:close();
