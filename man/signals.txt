@@ -1,0 +1,3 @@
+SIGINIT - System fully initialized
+SIGTERM - Termination of program
+SIGKILL - Forced termination of program
