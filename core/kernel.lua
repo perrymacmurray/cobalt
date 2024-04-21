@@ -1,10 +1,12 @@
 local loadfile = ... -- we pass this function from init.lua
 
-_G._OSVERSION = "COBALT 0.1 Dev"
+_G._OSVERSION = "COBALT 0.2 Dev"
 _G.runlevel = 1
 
+_G.kernel = {}
+
 -- Override some functions
-computer.runlevel = function()
+function kernel.runlevel()
     return _G.runlevel
 end
 
@@ -23,36 +25,16 @@ computer.shutdown = function(reboot)
     nativeShutdown(reboot)
 end
 
-function os.sleep(timeout)
-    checkArg(1, timeout, "number", "nil")
-    local deadline = computer.uptime() + (timeout or 0)
-    repeat
-        computer.pullSignal(deadline - computer.uptime())
-    until computer.uptime() >= deadline
-end
-
-computer.panic = function(err)
+kernel.panic = function(err)
     computer.pushSignal("SIGKILL")
 
-    if computer.runlevel() > 2 then -- 3+ runlevel means we have io/other important libraries
-        io.stderr:write("KERNEL PANIC: " .. err)
-    else
-        local gpu = component.list("gpu", true)()
-        if gpu then
-            gpu = component.proxy(gpu)
-            local w, h = gpu.getResolution()
-            gpu.setForeground(0xFFA500)
-            gpu.setBackground(0x000000)
-            for i = 1, w, 3 do
-                gpu.fill(i, 1, i, h, "K")
-                gpu.fill(i + 1, 1, i + 1, h, "P")
-                if (type(err) == "number" and err < 10) then
-                    gpu.fill(i + 2, 1, i + 2, h, tostring(math.floor(err)))
-                else
-                    gpu.fill(i + 2, 1, i + 2, h, "!")
-                end
-            end
-        end
+    local gpu = component.list("gpu", true)()
+    if gpu then
+        gpu = component.proxy(gpu)
+        local w, h = gpu.getResolution()
+        gpu.setForeground(0xFFFFFF)
+        gpu.setBackground(0xFF0000)
+        gpu.set(1, h, "KERNEL PANIC: " .. err)
     end
 
     _G.runlevel = 0
@@ -73,21 +55,27 @@ if gpu then
         gpu.bind(screen)
     end
     
-    _G.boot_screen = gpu.getScreen()
+    kernel.primary_gpu = gpu
     w, h = gpu.maxResolution()
     gpu.setResolution(w, h)
-    gpu.setForeground(0xFFA500) -- orange phosphor color seems plesant for startup
     gpu.setBackground(0x000000)
     gpu.fill(1, 1, w, h, " ") -- write over screen
 end
 
 local y = 1
 local function print(message)
+    if os.log then os.log(message) end
     if gpu then
+        -- fancy colors by runlevel
+        if runlevel == 1 then gpu.setForeground(0xAB0202) end
+        if runlevel == 2 then gpu.setForeground(0xFFA500) end
+        if runlevel == 3 then gpu.setForeground(0xE3CC20) end
+        if runlevel == 4 then gpu.setForeground(0x02AD10) end
+
         gpu.set(1, y, "[" .. computer.uptime() .. "] " .. message)
         if y == h then
             gpu.copy(1, 2, w, h, 0, -1)
-            gpu.fill(1, 1, w, h, " ")
+            gpu.fill(1, h, w, h, " ")
         else
             y = y + 1
         end
@@ -95,7 +83,6 @@ local function print(message)
 end
 
 -- We've made it to the beginning of the initialization
-_G.runlevel = 2
 print("Initializing " .. _OSVERSION)
 print("------------") -- this line is important enough to get two rows
 
@@ -107,22 +94,39 @@ local function dofile(file)
         if result[1] then
             return table.unpack(result, 2, result.n)
         else
-            computer.panic(result[2])
+            kernel.panic(result[2])
         end
     else
-        computer.panic(err)
+        kernel.panic(err)
     end
 end
 
 -- Load core libraries
-_G.filesystem = dofile("/core/filesystem.lua")
-_G.shell = dofile("/core/shell.lua")
+dofile("/core/os.lua")
+_G.fs = dofile("/core/fs.lua")
 
 print("Mounting filesystem")
-filesystem.mount(computer.getBootAddress(), "/")
+fs.mount(computer.getBootAddress(), "/")
 
+-- Run level 2: OS core loaded, filesystem loaded, boot drive mounted, logging enabled
+_G.runlevel = 2
+
+_G.io = dofile("/core/io.lua")
+
+-- Run level 3: IO and other low level libraries loaded
 _G.runlevel = 3
+
+_G.shell = dofile("/core/shell.lua")
+
+-- Run level 4: All core libraries loaded
+_G.runlevel = 4
+
 print("Finishing library initialization")
 computer.pushSignal("SIGINIT")
+io.setGpu(kernel.primary_gpu)
+os.sleep(0.2)
 
+-- Run level 5: Fully loaded
 _G.runlevel = 5
+
+if gpu then gpu.setForeground(0xFFFFFF) end
