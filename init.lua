@@ -16,9 +16,13 @@ do -- I kind of hate this but I think OpenOS had it right
     loadfile("/core/kernel.lua")(loadfile)
 end
 
+_, err = xpcall(kernel.scheduler.begin, kernel.panic)
+
+-- Make it abundantly obvious if we panic
 while true do
-    local result, _ = pcall(shell.getShell())
-    if not result then
-        break
-    end
+    computer.beep(2000, 0.5)
+    computer.beep(1000, 0.5)
 end
+
+-- Try and keep panic on screen, but otherwise crash with message
+computer.crash(err)

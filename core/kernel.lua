@@ -26,6 +26,9 @@ computer.shutdown = function(reboot)
 end
 
 kernel.panic = function(err)
+    -- Write before sigkill to make sure filesystem is still working (hopefully)
+    os.log("KERNEL PANIC: " .. err)
+
     computer.pushSignal("SIGKILL")
 
     local gpu = component.list("gpu", true)()
@@ -38,11 +41,7 @@ kernel.panic = function(err)
     end
 
     _G.runlevel = 0
-    while true do
-        if os.sleep then
-            os.sleep(100)
-        end
-    end
+    error(err)
 end
 
 -- Bind GPU to screen
@@ -84,7 +83,6 @@ end
 
 -- We've made it to the beginning of the initialization
 print("Initializing " .. _OSVERSION)
-print("------------") -- this line is important enough to get two rows
 
 local function dofile(file)
     print("Loading " .. file)
@@ -111,11 +109,17 @@ fs.mount(computer.getBootAddress(), "/")
 -- Run level 2: OS core loaded, filesystem loaded, boot drive mounted, logging enabled
 _G.runlevel = 2
 
+print("Seeding random")
+math.randomseed(os.time())
+
+kernel.scheduler = dofile("/core/scheduler.lua")
+_G.thread = dofile("/core/thread.lua")
 _G.io = dofile("/core/io.lua")
 
 -- Run level 3: IO and other low level libraries loaded
 _G.runlevel = 3
 
+_G.keyboard = dofile("/core/keyboard.lua")
 _G.shell = dofile("/core/shell.lua")
 
 -- Run level 4: All core libraries loaded
@@ -124,9 +128,17 @@ _G.runlevel = 4
 print("Finishing library initialization")
 computer.pushSignal("SIGINIT")
 io.setGpu(kernel.primary_gpu)
-os.sleep(0.2)
+
+table.insert(kernel.scheduler.threads, thread.create(function()
+    while true do
+        io.println("kernel thread")
+        os.sleep(0.5)
+    end
+end))
 
 -- Run level 5: Fully loaded
 _G.runlevel = 5
 
 if gpu then gpu.setForeground(0xFFFFFF) end
+
+table.insert(kernel.scheduler.threads, shell.getShell())

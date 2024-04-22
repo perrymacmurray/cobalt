@@ -2,7 +2,11 @@ function os.sleep(timeout)
     checkArg(1, timeout, "number", "nil")
     local deadline = computer.uptime() + (timeout or 0)
     repeat
-        computer.pullSignal(deadline - computer.uptime())
+        if kernel.runlevel() == 5 then
+            coroutine.yield()
+        else
+            computer.pullSignal(deadline - computer.uptime())
+        end
     until computer.uptime() >= deadline
 end
 

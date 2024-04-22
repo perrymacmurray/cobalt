@@ -1,13 +1,13 @@
 local shell = {}
 
 function shell.getShell()
-    if io then
+    return thread.create(function()
         io.clear()
-        io.println("Everything works so far")
-    end
-    os.sleep(10)
-    
-    return 0
+        while true do
+            io.println("Everything works so far")
+            os.sleep(2)
+        end
+    end)
 end
 
 return shell
