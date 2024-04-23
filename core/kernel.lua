@@ -129,7 +129,7 @@ print("Finishing library initialization")
 computer.pushSignal("SIGINIT")
 io.setGpu(kernel.primary_gpu)
 
-table.insert(kernel.scheduler.threads, thread.create(function()
+kernel.scheduler.addThread(thread.create(function()
     while true do
         io.println("kernel thread")
         os.sleep(0.5)
@@ -141,4 +141,4 @@ _G.runlevel = 5
 
 if gpu then gpu.setForeground(0xFFFFFF) end
 
-table.insert(kernel.scheduler.threads, shell.getShell())
+kernel.scheduler.addThread(shell.getShell())
