@@ -1,6 +1,6 @@
 local loadfile = ... -- we pass this function from init.lua
 
-_G._OSVERSION = "COBALT 0.2 Dev"
+_G._OSVERSION = "COBALT 0.3 Dev"
 _G.runlevel = 1
 
 _G.kernel = {}
@@ -120,6 +120,9 @@ _G.io = dofile("/core/io.lua")
 _G.runlevel = 3
 
 _G.keyboard = dofile("/core/keyboard.lua")
+kernel.scheduler.addThread(keyboard.getDownListenerThread())
+kernel.scheduler.addThread(keyboard.getUpListenerThread())
+
 _G.shell = dofile("/core/shell.lua")
 
 -- Run level 4: All core libraries loaded
@@ -128,13 +131,6 @@ _G.runlevel = 4
 print("Finishing library initialization")
 computer.pushSignal("SIGINIT")
 io.setGpu(kernel.primary_gpu)
-
-kernel.scheduler.addThread(thread.create(function()
-    while true do
-        io.println("kernel thread")
-        os.sleep(0.5)
-    end
-end))
 
 -- Run level 5: Fully loaded
 _G.runlevel = 5

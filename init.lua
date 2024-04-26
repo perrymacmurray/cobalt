@@ -16,7 +16,9 @@ do -- I kind of hate this but I think OpenOS had it right
     loadfile("/core/kernel.lua")(loadfile)
 end
 
-_, err = xpcall(kernel.scheduler.begin, kernel.panic)
+_, err = xpcall(kernel.scheduler.begin, function(err)
+    if kernel.runlevel() ~= 0 then kernel.panic(err) end
+end)
 
 -- Make it abundantly obvious if we panic
 while true do

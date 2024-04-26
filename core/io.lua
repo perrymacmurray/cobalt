@@ -20,6 +20,18 @@ function io.clear()
     io.cur_h = 1
 end
 
+function io.erase(n)
+    io.gpu.fill(io.cur_w - n, io.cur_h, io.cur_w, io.cur_h, " ")
+    io.cur_w = io.cur_w - n
+end
+
+function io.print(message)
+    local max_w, max_h = io.gpu.maxResolution()
+
+    io.gpu.set(io.cur_w, io.cur_h, message)
+    io.cur_w = io.cur_w + string.len(message)
+end
+
 function io.println(message)
     if type(message) ~= "string" then
         message = tostring(message)

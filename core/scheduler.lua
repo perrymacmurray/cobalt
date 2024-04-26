@@ -1,6 +1,7 @@
 local scheduler = {}
 
 scheduler.threads = {}
+scheduler.callbacks = {}
 local threads = scheduler.threads
 
 function scheduler.addThread(thread)
@@ -8,7 +9,16 @@ function scheduler.addThread(thread)
     table.insert(threads, thread)
 end
 
+local function runThread(tr)
+    scheduler.current_thread = tr
+    local ok, extra = tr:run()
+    scheduler.current_thread = nil
+    return ok, extra
+end
+
 local function threadCompare(a, b)
+    if a.waiting then return false end -- Guarantee waiting threads end up in back
+
     if a.sleep == b.sleep then
         return a.priority < b.priority
     end
@@ -17,22 +27,54 @@ local function threadCompare(a, b)
     return a.sleep < b.sleep
 end
 
+local function addCallback(tr, eventName)
+    if scheduler.callbacks[eventName] == nil then
+        scheduler.callbacks[eventName] = {}
+    end
+
+    table.insert(scheduler.callbacks[eventName], tr)
+end
+
+local function doCallbacks(event)
+    -- For loops don't like it when iterating over nil
+    if scheduler.callbacks[event[1]] == nil then return end
+
+    for _, tr in ipairs(scheduler.callbacks[event[1]]) do
+        tr.event = event
+    end
+
+    local cbThreads = scheduler.callbacks[event[1]]
+    scheduler.callbacks[event[1]] = {}
+    for _, tr in ipairs(cbThreads) do
+        local ok, extra = runThread(tr)
+
+        -- We have to handle adding callbacks again here, which is kind of annoying
+        if ok then
+            if extra ~= nil then addCallback(tr, extra) end
+        end
+    end
+end
+
 function scheduler.begin()
     local lastTime = computer.uptime()
     while kernel.runlevel() == 5 do
-        computer.pullSignal(0) -- Yield to underlying OpenComputers machine
-
         local deadThreads = {}
         for i, tr in ipairs(threads) do
-            scheduler.current_thread = tr.id
-            local ok, err = tr:run()
-            scheduler.current_thread = nil
-
-            if not ok then
+            local ok, extra = runThread(tr)
+            
+            if ok then
+                if extra ~= nil then
+                    addCallback(tr, extra) -- Thread is waiting for event
+                end
+            else
                 if not tr:isAlive() then
+                    os.log("Thread " .. tr.id .. " died: " .. tostring(extra))
                     table.insert(deadThreads, i) -- Store indices in threads table
                 end
             end
+
+            local event = {computer.pullSignal(0)} -- Yield to underlying OpenComputers machine
+            if event ~= nil and event[1] ~= nil then doCallbacks(event) end
         end
 
         -- Clean up dead threads
@@ -49,6 +91,8 @@ function scheduler.begin()
 
         -- Reorder priorities
         table.sort(threads, threadCompare)
+
+        if #threads == 0 then kernel.panic("All threads have died!") end
     end
 end
 
