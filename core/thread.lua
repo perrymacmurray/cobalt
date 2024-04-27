@@ -1,7 +1,7 @@
 local thread = {}
 
 --- Thread
-Thread = {priority = 10, co = nil, id = 0, sleep = 0, waiting = false, event = nil}
+Thread = {priority = 10, grief = 0, co = nil, id = 0, sleep = 0, waiting = false, event = nil}
 
 local threadCount = 0
 local function nextThreadID()
@@ -17,6 +17,7 @@ function Thread:new(o)
     o.id = nextThreadID() -- Thread ID, should be unique
     o.co = nil -- Internal coroutine
     o.priority = 10 -- Thread priority, lower number = more important
+    o.grief = 0 -- Used by the scheduler alongside priority. Kind of like Linux's Nice, but reversed and volatile
     o.sleep = 0 -- How long the thread has said it's okay to sleep for
     o.waiting = false -- If the thread is currently waiting
     o.event = nil -- Used by thread.wait(), represents a pending event for the thread to process

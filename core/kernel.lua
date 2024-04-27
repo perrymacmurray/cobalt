@@ -112,6 +112,7 @@ _G.runlevel = 2
 print("Seeding random")
 math.randomseed(os.time())
 
+dofile("/core/interrupt.lua") -- Kernel interrupt
 kernel.scheduler = dofile("/core/scheduler.lua")
 _G.thread = dofile("/core/thread.lua")
 _G.io = dofile("/core/io.lua")
