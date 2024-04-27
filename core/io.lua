@@ -41,8 +41,8 @@ function io.println(message)
 
     --todo accomidate for long lines
     if io.cur_h > max_h then
-        io.gpu.copy(1, 2, w, h, 0, -1)
-        io.gpu.fill(1, h, w, h, " ")
+        io.gpu.copy(1, 2, io.w, io.h, 0, -1)
+        io.gpu.fill(1, io.h, io.w, io.h, " ")
         io.cur_h = max_h
     end
     io.gpu.set(io.cur_w, io.cur_h, message)
