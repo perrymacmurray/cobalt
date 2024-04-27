@@ -124,7 +124,7 @@ function scheduler.begin()
 
         -- Grab kernel interrupt
         if keyboard ~= nil then
-            if keyboard.isCtrlDown() and keyboard.isKeyDown(keyboard.keys.pause) then
+            if keyboard.isCtrlDown() and keyboard.isKeyDown(keyboard.keys.k) then
                 kernel.doInterrupt()
             end
         end
