@@ -30,6 +30,10 @@ function keyboard.getNextKey()
     end
 end
 
+function keyboard.reset()
+    keyboard.keysDown = {}
+end
+
 -- These functions are only intended to be called by the kernel
 function keyboard.handleKeystroke(_, eventName, _, char, code)
     if code ~= nil then

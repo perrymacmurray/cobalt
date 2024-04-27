@@ -59,6 +59,8 @@ end
 
 function scheduler.begin()
     local lastTime = computer.uptime()
+    local justDidInterrupt = false
+
     while kernel.runlevel() == 5 do
         local deadThreads = {}
         for i, tr in ipairs(threads) do
@@ -111,11 +113,13 @@ function scheduler.begin()
 
         -- Change guarantee if necessary
         if delta > 0.15 then
-            -- I'm not sure what the best way to do this is.
-            -- Maybe a rolling average?
-            if scheduler.guarantee > 1 then
-                scheduler.guarantee = scheduler.guarantee - 1
-                os.log("Set scheduler guarantee to " .. scheduler.guarantee)
+            if not justDidInterrupt then
+                -- I'm not sure what the best way to do this is.
+                -- Maybe a rolling average?
+                if scheduler.guarantee > 1 then
+                    scheduler.guarantee = scheduler.guarantee - 1
+                    os.log("Set scheduler guarantee to " .. scheduler.guarantee)
+                end
             end
         end
 
@@ -126,6 +130,9 @@ function scheduler.begin()
         if keyboard ~= nil then
             if keyboard.isCtrlDown() and keyboard.isKeyDown(keyboard.keys.k) then
                 kernel.doInterrupt()
+                keyboard.reset() -- Forcibly put the keyboard back, as we missed key_up events
+
+                justDidInterrupt = true
             end
         end
 

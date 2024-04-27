@@ -1,6 +1,6 @@
 local loadfile = ... -- we pass this function from init.lua
 
-_G._OSVERSION = "COBALT 0.3 Dev"
+_G._OSVERSION = "COBALT 0.4 Dev"
 _G.runlevel = 1
 
 _G.kernel = {}
@@ -27,7 +27,7 @@ end
 
 kernel.panic = function(err)
     -- Write before sigkill to make sure filesystem is still working (hopefully)
-    os.log("KERNEL PANIC: " .. err)
+    if os.log then os.log("KERNEL PANIC: " .. err) end
 
     computer.pushSignal("SIGKILL")
 
@@ -42,6 +42,22 @@ kernel.panic = function(err)
 
     _G.runlevel = 0
     error(err)
+end
+
+kernel.message = function(message)
+    message = "KERNEL: " .. message
+    if os.log then os.log(message) end
+
+    local gpu = component.list("gpu", true)()
+    if gpu then
+        gpu = component.proxy(gpu)
+        local w, h = gpu.getResolution()
+
+        gpu.setForeground(0x000000)
+        gpu.setBackground(0xFFA500)
+        gpu.fill(1, h, w, h, " ")
+        gpu.set(1, h, message)
+    end
 end
 
 -- Bind GPU to screen
