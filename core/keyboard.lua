@@ -95,6 +95,7 @@ keyboard.keysReverse[0x2C] = "z"
 
 keyboard.keysReverse[0x39] = " "
 keyboard.keysReverse[0x0E] = "BACK"
+keyboard.keysReverse[0x1C] = "ENTER"
 
 -- Declaration of the entire keyboard
 -- Taken from OpenComputers, with "extraneous keys" removed
