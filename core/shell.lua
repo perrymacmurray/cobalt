@@ -44,10 +44,19 @@ local function runCommand(file)
     end
 end
 
+local function newline()
+    local fg = kernel.primary_gpu.getForeground()
+    kernel.primary_gpu.setForeground(0x00FF00)
+
+    io.print("$ ")
+
+    kernel.primary_gpu.setForeground(fg)
+end
+
 local function start()
     io.clear()
     local buffer = ""
-    io.print("$ ")
+    newline()
     while true do
         local key = keyboard.getNextKey();
         if key == "BACK" then
@@ -59,7 +68,7 @@ local function start()
             io.println("")
             runCommand(buffer)
             buffer = ""
-            io.print("$ ")
+            newline()
         else
             io.print(key)
             buffer = buffer .. key
