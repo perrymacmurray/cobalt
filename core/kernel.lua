@@ -121,6 +121,7 @@ _G.fs = dofile("/core/fs.lua")
 
 print("Mounting filesystem")
 fs.mount(computer.getBootAddress(), "/")
+fs.remove("/log.txt") -- Remove any preexisting log
 
 -- Run level 2: OS core loaded, filesystem loaded, boot drive mounted, logging enabled
 _G.runlevel = 2
@@ -145,6 +146,8 @@ _G.shell = dofile("/core/shell.lua")
 -- Run level 4: All core libraries loaded
 _G.runlevel = 4
 
+_G.require = dofile("/core/require.lua")
+
 print("Finishing library initialization")
 computer.pushSignal("SIGINIT")
 io.setGpu(kernel.primary_gpu)
@@ -154,4 +157,12 @@ _G.runlevel = 5
 
 if gpu then gpu.setForeground(0xFFFFFF) end
 
-kernel.scheduler.addThread(shell.getShell())
+if (fs.exists("/autorun.lua")) then
+    local tr = thread.create(require("/autorun.lua"), 6)
+    kernel.baseThread = tr
+    kernel.scheduler.addThread(tr)
+else
+    local tr = shell.getShell()
+    kernel.baseThread = tr
+    kernel.scheduler.addThread(tr)
+end

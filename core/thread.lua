@@ -1,7 +1,7 @@
 local thread = {}
 
 --- Thread
-Thread = {priority = 10, grief = 0, co = nil, id = 0, sleep = 0, waiting = false, event = nil}
+Thread = {priority = 10, grief = 0, func = nil, co = nil, id = 0, sleep = 0, waiting = false, event = nil}
 
 local threadCount = 0
 local function nextThreadID()
@@ -15,6 +15,7 @@ function Thread:new(o)
     self.__index = self
 
     o.id = nextThreadID() -- Thread ID, should be unique
+    o.func = nil -- Function called for coroutine
     o.co = nil -- Internal coroutine
     o.priority = 10 -- Thread priority, lower number = more important
     o.grief = 0 -- Used by the scheduler alongside priority. Kind of like Linux's Nice, but reversed and volatile
@@ -50,11 +51,19 @@ function Thread:run()
 
     return true, waitFor
 end
+
+function Thread:restart()
+    self.co = coroutine.create(self.func)
+    self.sleep = 0
+    self.waiting = false
+    self.event = nil
+end
 --- End Thread
 
 function thread.create(lambda, prio)
     local t = Thread:new()
     t.co = coroutine.create(lambda)
+    t.func = lambda
     if (prio ~= nil) then t.priority = prio end
 
     return t

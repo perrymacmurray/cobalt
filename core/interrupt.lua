@@ -36,6 +36,26 @@ function kernel.doInterrupt()
         kernel.message("Scheduler guarantees priority " .. tostring(kernel.scheduler.guarantee))
     elseif key == "t" then -- number of *T*hreads
         kernel.message("Running " .. tostring(#(kernel.scheduler.threads)) .. " threads")
+    elseif key == "c" then -- terminate the *C*urrently running base thread (I took this one from ctrl+c)
+        kernel.baseThread.co = nil -- Set internal coroutine to nil (dangerous)
+        
+        local killed = false
+        for i, tr in ipairs(kernel.scheduler.threads) do
+            if tr.id == kernel.baseThread.id then
+                table.remove(kernel.scheduler.threads, i)
+                kernel.message("Killed thread " .. kernel.baseThread.id)
+                killed = true
+                break
+            end
+        end
+        if not killed then kernel.message("Could not kill thread (already dead?)") end
+
+        local tr = shell.getShell()
+        kernel.baseThread = tr
+        kernel.scheduler.addThread(tr)
+    elseif key == "r" then -- *R*estart the current base thread
+        kernel.baseThread:restart()
+        kernel.message("Restarted thread " .. kernel.baseThread.id)
     end
 
     getInput() -- Wait before returning to scheduler
