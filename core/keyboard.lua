@@ -16,7 +16,18 @@ function keyboard.isCtrlDown()
     return keyboard.isKeyDown(keyboard.keys.lcontrol) or keyboard.isKeyDown(keyboard.keys.rcontrol)
 end
 
--- Only supports alphanumeric keys, and space
+local function upper(key)
+    local num = tonumber(key)
+
+    if num == nil then
+        return string.upper(key)
+    else
+        local specials = {")", "!", "@", "#", "$", "%", "^", "&", "*", "("}
+        return specials[num + 1] -- zero indexing
+    end
+end
+
+-- Only supports alphanumeric keys, and space (and a few extras, I was feeling generous)
 function keyboard.getNextKey()
     while true do
         local _, _, _, _, code = thread.wait("key_down")
@@ -24,7 +35,7 @@ function keyboard.getNextKey()
         if code ~= nil then
             local key = keyboard.keysReverse[code]
             if key ~= nil then
-                return keyboard.isShiftDown() and string.upper(key) or key
+                return keyboard.isShiftDown() and upper(key) or key
             end
         end
     end
@@ -94,6 +105,11 @@ keyboard.keysReverse[0x15] = "y"
 keyboard.keysReverse[0x2C] = "z"
 
 keyboard.keysReverse[0x39] = " "
+keyboard.keysReverse[0x34] = "."
+keyboard.keysReverse[0x33] = ","
+keyboard.keysReverse[0x28] = "'"
+keyboard.keysReverse[0x35] = "/"
+
 keyboard.keysReverse[0x0E] = "BACK"
 keyboard.keysReverse[0x1C] = "ENTER"
 
