@@ -17,33 +17,49 @@ local function writeError(message)
 end
 
 local function runCommand(file)
+    words = {}
+    for word in file:gmatch("%S+") do table.insert(words, word) end
+
+    file = words[1]
+    table.remove(words, 1)
+
     if file == "" then
         writeError("Must specify file name")
         return
     end
 
+    -- Maybe add a PATH eventually or something
+    if not file:match("%.lua$") then
+        file = "/bin/" .. file .. ".lua"
+    end
+
     if fs.exists(file) then
         os.log("Attempting to run file at " .. file)
-        xpcall(require(file), function()
+        xpcall(require(file), function(message)
+            writeError(message)
             writeError(debug.traceback())
-        end)
+        end, table.unpack(words))
     else
-        writeError("File " .. file .. " does not exist")
+        writeError("File '" .. file .. "' does not exist")
     end
 end
 
 local function start()
     io.clear()
     local buffer = ""
+    io.print("$ ")
     while true do
         local key = keyboard.getNextKey();
         if key == "BACK" then
-            io.erase(1)
-            buffer = buffer:sub(1, -2)
+            if buffer ~= "" then
+                buffer = buffer:sub(1, -2)
+                io.erase(1)
+            end
         elseif key == "ENTER" then
             io.println("")
             runCommand(buffer)
             buffer = ""
+            io.print("$ ")
         else
             io.print(key)
             buffer = buffer .. key

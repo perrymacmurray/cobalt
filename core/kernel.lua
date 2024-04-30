@@ -1,6 +1,6 @@
 local loadfile = ... -- we pass this function from init.lua
 
-_G._OSVERSION = "COBALT 0.5 Alpha"
+_G._OSVERSION = "COBALT 0.1 Beta"
 _G.runlevel = 1
 
 _G.kernel = {}
