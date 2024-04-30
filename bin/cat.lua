@@ -9,9 +9,10 @@ local f = fs.open(arg, "r")
 
 local buffer = ""
 while true do
-    local data = f:read(1000)
+    local data = f:read(500)
     if data == nil then break end
     buffer = buffer .. data
+    thread.yield() -- some of these files can be rather large
 end
 
 for s in magiclines(buffer) do

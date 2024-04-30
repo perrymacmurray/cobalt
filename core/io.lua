@@ -27,7 +27,15 @@ function io.erase(n)
     io.cur_w = io.cur_w - n
 end
 
+function io.bump()
+    io.gpu.copy(1, 2, io.w, io.h, 0, -1)
+    io.gpu.fill(1, io.h, io.w, io.h, " ")
+    io.cur_h = io.h
+end
+
 function io.print(message)
+    if io.cur_h > io.h then io.bump() end
+    
     io.gpu.set(io.cur_w, io.cur_h, message)
     io.cur_w = io.cur_w + string.len(message)
 end
@@ -38,11 +46,8 @@ function io.println(message)
     end
 
     --todo accomidate for long lines
-    if io.cur_h > io.h then
-        io.gpu.copy(1, 2, io.w, io.h, 0, -1)
-        io.gpu.fill(1, io.h, io.w, io.h, " ")
-        io.cur_h = io.h
-    end
+    if io.cur_h > io.h then io.bump() end
+
     io.gpu.set(io.cur_w, io.cur_h, message)
     io.cur_h = io.cur_h + 1
     io.cur_w = 1
